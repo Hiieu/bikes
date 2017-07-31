@@ -84,7 +84,10 @@ def handle_parser(args):
 
 
 def create_parser():
-    parser = ArgumentParser()
+    parser = ArgumentParser(description='Algorithm for calculating average '
+                                        'journey across all bikes and stations',
+                            epilog='python run.py -start 20170714T10:04:00 '
+                                   '-end 20170715T13:04:00')
     parser.add_argument('-start',
                         help='Start of the reporting_period', required=True)
     parser.add_argument('-end',
