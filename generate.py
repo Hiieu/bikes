@@ -11,6 +11,7 @@ fake = Faker('en_GB')
 
 DATETIME_FMT = '%Y%m%dT%H:%M:%S'
 FILE_NAME = 'stations.csv'
+FIELDNAMES = ('station_id', 'bike_id', 'arrival_datetime', 'departure_datetime')
 ROWS = 300
 START_DT = datetime(2017, 7, 14)
 END_DT = datetime(2017, 7, 15)
@@ -57,7 +58,7 @@ def generate_rows():
 
 def generate_csv():
     with open(FILE_NAME, 'w') as fd:
-        fieldnames = ('station_id', 'bike_id', 'arrival_datetime', 'departure_datetime')
+        fieldnames = FIELDNAMES
         writer = csv.DictWriter(fd, fieldnames=fieldnames)
         results = generate_rows()
         random.shuffle(results)
