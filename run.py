@@ -18,7 +18,6 @@ class Average(object):
     def __init__(self, arrival, departure):
         self.arrival, self.departure = self._format_datetime(arrival), \
                                          self._format_datetime(departure)
-        self.average = self.calculate()
 
     def calculate(self):
         with open(self.file_name) as f:
@@ -28,7 +27,12 @@ class Average(object):
                 row_arrival, row_departure = row[0], row[1]
                 self.sum_timedelta += (row_arrival - self.arrival) + \
                                       (self.departure - row_departure)
-        average = self.sum_timedelta.total_seconds() / self.rows_to_calc
+
+        rows_to_calc = self.rows_to_calc
+        if rows_to_calc:
+            average = self.sum_timedelta.total_seconds() / rows_to_calc
+        else:
+            average = rows_to_calc
         return str(timedelta(seconds=int(round(average))))
 
     def _get_correct_rows_dates(self, reader):

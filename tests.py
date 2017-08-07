@@ -1,62 +1,67 @@
+from copy import deepcopy
 from csv import DictWriter
 from datetime import datetime
 from unittest import TestCase, main
-from mock import patch, PropertyMock
+from unittest.mock import patch, PropertyMock
 
 from generate import FIELDNAMES
 from run import Average, DATETIME_FMT
 from tempfile import mkstemp
 
 
-class TestAverageDuration(TestCase):
-    test_data = [{
-        'station_id': 536,
-        'bike_id': 8845,
-        'arrival_datetime': '20170714T09:00:00',
-        'departure_datetime': '20170714T12:00:00'
-    }, {
-        'station_id': 293,
-        'bike_id': 2800,
-        'arrival_datetime': '20170714T08:00:00',
-        'departure_datetime': '20170714T13:00:00'
-    }]
+TEST_DATA = [{
+    'station_id': 536,
+    'bike_id': 8845,
+    'arrival_datetime': '20170714T09:00:00',
+    'departure_datetime': '20170714T12:00:00'
+}, {
+    'station_id': 293,
+    'bike_id': 2800,
+    'arrival_datetime': '20170714T08:00:00',
+    'departure_datetime': '20170714T13:00:00'
+}]
 
-    def _generate_test_csv(self):
+
+class TestAverageDuration(TestCase):
+    def _generate_test_csv(self, test_data):
         with open(self.filename, 'w') as fd:
             fieldnames = FIELDNAMES
             writer = DictWriter(fd, fieldnames=fieldnames)
-            writer.writerows(self.test_data)
+            writer.writerows(test_data)
 
     def setUp(self):
         self.arrival = '20170714T06:00:00'
         self.departure = '20170714T14:00:00'
         self.filename = mkstemp(suffix='.csv')[1]
-        self._generate_test_csv()
         self.file_mock = patch.object(Average, 'file_name',
                                       new_callable=PropertyMock,
                                       return_value=self.filename)
 
     def test(self):
+        self._generate_test_csv(TEST_DATA)
         with self.file_mock:
             calculated = Average(self.arrival, self.departure).calculate()
             self.assertEqual(calculated, '4:00:00')
 
     def test_empty_arrival(self):
-        test_data = self.test_data
+        test_data = deepcopy(TEST_DATA)
+        test_data[0]['arrival_datetime'] = ''
         test_data[1]['arrival_datetime'] = ''
-        with patch.object(self, 'test_data', return_value=test_data):
-            with self.file_mock:
-                calculated = Average(self.arrival, self.departure).calculate()
-                self.assertEqual(calculated, '4:00:00')
+        self._generate_test_csv(test_data)
+        with self.file_mock:
+            calculated = Average(self.arrival, self.departure).calculate()
+            self.assertEqual(calculated, '1:30:00')
 
     def test_empty_dates(self):
-        test_data = self.test_data
+        test_data = deepcopy(TEST_DATA)
+        test_data[0]['arrival_datetime'] = ''
+        test_data[0]['departure_datetime'] = ''
         test_data[1]['arrival_datetime'] = ''
         test_data[1]['departure_datetime'] = ''
-        with patch.object(self, 'test_data', return_value=test_data):
-            with self.file_mock:
-                calculated = Average(self.arrival, self.departure).calculate()
-                self.assertEqual(calculated, '3:00:00')
+        self._generate_test_csv(test_data)
+        with self.file_mock:
+            calculated = Average(self.arrival, self.departure).calculate()
+            self.assertEqual(calculated, '0:00:00')
 
     def test_check_correct_row(self):
         with self.file_mock:
