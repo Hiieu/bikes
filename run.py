@@ -41,21 +41,19 @@ class Average(object):
         is_header = True
         for row in reader:
             if is_header:
-                first_row_dates = self._get_first_row_dates(columns)
+                first_row_dates = self._get_row_dates(columns[2], columns[3])
                 if first_row_dates:
-                    self.rows_to_calc += 1
                     yield first_row_dates
                 is_header = False
 
-            arrival, departure = row[columns[2]], row[columns[3]]
-            arrival, departure = self._format_row_dates(arrival, departure)
-            if self._check_if_row_is_correct(arrival, departure):
-                self.rows_to_calc += 1
-                yield arrival, departure
+            row_dates = self._get_row_dates(row[columns[2]], row[columns[3]])
+            if row_dates:
+                yield row_dates
 
-    def _get_first_row_dates(self, columns):
-        arrival, departure = self._format_row_dates(columns[2], columns[3])
+    def _get_row_dates(self, arrival, departure):
+        arrival, departure = self._format_row_dates(arrival, departure)
         if self._check_if_row_is_correct(arrival, departure):
+            self.rows_to_calc += 1
             return arrival, departure
 
     def _check_if_row_is_correct(self, arrival, departure):
